@@ -1,0 +1,658 @@
+﻿<%@ Master Language="C#" AutoEventWireup="true" CodeBehind="Site.Master.cs" Inherits="EcommerceOrderSystem.Site" %>
+
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head runat="server">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>电商管理系统</title>
+    
+    <!-- 引入 CDN 资源 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- 核心样式定义 (无需外部文件) -->
+    <style>
+        :root {
+            --primary: #4e73df;
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --secondary: #858796;
+            --bg-body: #f0f2f5;
+            --sidebar-width: 260px;
+            --card-radius: 20px;
+            --btn-radius: 50px;
+            --shadow-soft: 0 10px 30px rgba(0,0,0,0.05);
+            --shadow-hover: 0 20px 40px rgba(0,0,0,0.12);
+        }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: var(--bg-body);
+            overflow-x: hidden;
+            color: #4a5568;
+        }
+
+        /* 1. 布局容器 */
+        #wrapper {
+            display: flex;
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* 2. 现代化侧边栏 */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: white;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid rgba(0,0,0,0.03);
+            box-shadow: 5px 0 25px rgba(0,0,0,0.02);
+            z-index: 100;
+            transition: all 0.3s;
+            height: 100vh;
+            position: relative;
+        }
+
+        .sidebar-brand {
+            height: 80px;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            padding: 0 1.5rem;
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: #4e73df;
+            letter-spacing: 1px;
+            flex-shrink: 0;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+        .sidebar-brand i { margin-right: 10px; font-size: 1.8rem; background: -webkit-linear-gradient(#667eea, #764ba2); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+        /* 导航区域可滚动 */
+        .sidebar-nav-wrapper {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 1rem 0;
+        }
+        
+        .sidebar-nav-wrapper::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .sidebar-nav-wrapper::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        
+        .sidebar-nav-wrapper::-webkit-scrollbar-thumb {
+            background: #cbd5e0;
+            border-radius: 3px;
+        }
+        
+        .sidebar-nav-wrapper::-webkit-scrollbar-thumb:hover {
+            background: #a0aec0;
+        }
+
+        .nav-item { margin: 5px 15px; }
+        
+        .nav-link {
+            border-radius: 12px;
+            padding: 12px 20px;
+            color: #718096;
+            font-weight: 600;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+        }
+        
+        .nav-link i { width: 24px; margin-right: 10px; font-size: 1.1rem; transition: 0.3s; }
+
+        .nav-link:hover {
+            background-color: #f7fafc;
+            color: #4e73df;
+            transform: translateX(5px);
+        }
+
+        .nav-link.active {
+            background: var(--primary-gradient);
+            color: white;
+            box-shadow: 0 5px 15px rgba(118, 75, 162, 0.3);
+        }
+        .nav-link.active i { transform: scale(1.2); }
+
+        .menu-heading {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: #a0aec0;
+            font-weight: 800;
+            margin: 20px 25px 10px;
+            letter-spacing: 0.5px;
+        }
+        
+        /* 底部用户信息固定 */
+        .sidebar-footer {
+            flex-shrink: 0;
+            border-top: 1px solid rgba(0,0,0,0.05);
+            padding: 1rem 1.5rem;
+            background: white;
+        }
+
+        /* 3. 主内容区 */
+        .content-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            overflow-x: hidden;
+            background: var(--bg-body);
+            position: relative;
+            min-height: 0; /* 确保flex子元素可以正确滚动 */
+        }
+        
+        /* 页面内容容器 - 可滚动 */
+        .page-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1.5rem 2rem 3rem;
+        }
+        
+        .page-content::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .page-content::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        
+        .page-content::-webkit-scrollbar-thumb {
+            background: #cbd5e0;
+            border-radius: 4px;
+        }
+        
+        .page-content::-webkit-scrollbar-thumb:hover {
+            background: #a0aec0;
+        }
+
+        /* 4. 顶部导航栏 (悬浮式) - 固定高度不压缩 */
+        .topbar {
+            height: 92px;
+            min-height: 92px; /* 防止被压缩 */
+            max-height: 92px; /* 防止被拉伸 */
+            margin: 24px 34px 0;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(22px);
+            border-radius: 26px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 42px;
+            box-shadow: 0 12px 28px -8px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.04);
+            z-index: 10;
+            letter-spacing: .5px;
+            flex-shrink: 0; /* 防止flex容器压缩 */
+            position: sticky; /* 可选：让顶栏固定在顶部 */
+            top: 0;
+        }
+        .topbar h5 { 
+            font-size: 1.45rem; 
+            display: flex; 
+            align-items: center;
+            margin: 0;
+            white-space: nowrap; /* 防止文字换行 */
+        }
+        .topbar h5 i { 
+            font-size: 1.5rem;
+            flex-shrink: 0; /* 防止图标被压缩 */
+        }
+        .topbar a { 
+            flex-shrink: 0; /* 防止链接被压缩 */
+            display: flex;
+            align-items: center;
+        }
+        .topbar a i { 
+            font-size: 1.3rem;
+        }
+        .topbar .vr { 
+            height: 36px;
+            flex-shrink: 0; /* 防止分隔线被压缩 */
+        }
+        @media (max-width: 992px) { 
+            .topbar { 
+                height: 78px;
+                min-height: 78px;
+                max-height: 78px;
+                padding: 0 24px; 
+                margin: 16px 20px 0; 
+                border-radius: 22px; 
+            } 
+            .topbar h5 { 
+                font-size: 1.25rem; 
+            } 
+        }
+
+        /* 5. 通用卡片设计 */
+        .glass-card {
+            background: white;
+            border-radius: var(--card-radius);
+            border: 1px solid rgba(255,255,255,0.85);
+            box-shadow: var(--shadow-soft);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            overflow: hidden;
+            position: relative;
+            padding: 1.25rem 1.5rem; /* 统一增大默认内边距 */
+        }
+        
+        .glass-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        /* 5.1 玻璃工具条（用于搜索筛选栏等） */
+        .glass-toolbar {
+            background: rgba(255, 255, 255, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.35);
+            box-shadow: 0 12px 30px rgba(31, 38, 135, 0.12);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-radius: 1rem;
+        }
+
+        /* 5.2 表格悬停与头部微玻璃 */
+        .table tr { transition: background 0.25s ease; }
+        .table tbody tr:hover { background: rgba(255,255,255,0.65); }
+        .table thead tr { backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+
+        /* 6. 按钮与交互 */
+        .btn-gradient {
+            background: var(--primary-gradient);
+            border: none;
+            color: white;
+            padding: 10px 25px;
+            border-radius: var(--btn-radius);
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(118, 75, 162, 0.3);
+            transition: all 0.3s;
+        }
+        .btn-gradient:hover {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 8px 20px rgba(118, 75, 162, 0.4);
+            color: white;
+        }
+
+        /* 6.1 通用按钮动效优化 */
+        .btn { transition: all 0.25s ease; }
+        .btn:active { transform: scale(0.98); }
+        .lift-hover:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(0,0,0,0.08); }
+        .soft-transition { transition: all 0.3s ease; }
+
+        /* 6.2 徽章轻微玻璃化 */
+        .badge { backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
+
+        /* 统一分页样式 */
+        .grid-pager {
+            padding: 1rem;
+            text-align: center;
+        }
+        .grid-pager a, .grid-pager span {
+            display: inline-block;
+            margin: 0 6px;
+            padding: 8px 14px;
+            border-radius: 20px;
+            border: 1px solid #e2e8f0;
+            color: #4a5568;
+            text-decoration: none;
+            background: #fff;
+        }
+        .grid-pager a:hover {
+            border-color: #667eea;
+            color: #667eea;
+        }
+        .grid-pager span { /* 当前页 */
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            border-color: transparent;
+            font-weight: 700;
+        }
+
+        /* 7. 动画定义 */
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-in { animation: fadeIn 0.6s ease-out forwards; }
+        .fade-in { animation: fadeIn 0.4s ease both; }
+
+        /* 滚动条美化 */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e0; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #a0aec0; }
+        
+        /* 购物车徽章 */
+        .cart-badge-bounce { animation: bounce 0.5s; }
+        @keyframes bounce { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.4); } }
+
+        /* 8. 模态框全局玻璃效果 */
+        .modal-content {
+            background: rgba(255,255,255,0.8);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border: 1px solid rgba(255,255,255,0.35);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+    </style>
+
+    <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
+</head>
+<body>
+    <form id="form1" runat="server">
+        <asp:ScriptManager ID="ScriptManager1" runat="server" EnablePartialRendering="true"></asp:ScriptManager>
+
+        <div id="wrapper">
+            
+            <!-- 侧边栏 -->
+            <nav class="sidebar">
+                <!-- Logo区域 - 固定 -->
+                <asp:PlaceHolder ID="phLogoAdmin" runat="server" Visible="false">
+                    <a class="sidebar-brand text-decoration-none" href="Dashboard.aspx">
+                        <i class="fas fa-bolt"></i>
+                        <span>电商MIS</span>
+                    </a>
+                </asp:PlaceHolder>
+                <asp:PlaceHolder ID="phLogoCustomer" runat="server" Visible="false">
+                    <a class="sidebar-brand text-decoration-none" href="Default.aspx">
+                        <i class="fas fa-bolt"></i>
+                        <span>电商MIS</span>
+                    </a>
+                </asp:PlaceHolder>
+
+                <!-- 导航区域 - 可滚动 -->
+                <div class="sidebar-nav-wrapper">
+                    <div class="d-flex flex-column">
+                        <asp:PlaceHolder ID="phExploreCustomer" runat="server" Visible="false">
+                            <div class="menu-heading">探索</div>
+                            <div class="nav-item">
+                                <a href="Default.aspx" class="nav-link <%= Request.Path.Contains("Default") ? "active" : "" %>">
+                                    <i class="fas fa-home"></i> <span>商城首页</span>
+                                </a>
+                            </div>
+                        </asp:PlaceHolder>
+
+                        <asp:PlaceHolder ID="phCustomerMenu" runat="server" Visible="false">
+                            <div class="menu-heading">个人中心</div>
+                            <div class="nav-item">
+                                <a href="Cart.aspx" class="nav-link <%= Request.Path.Contains("Cart") ? "active" : "" %>">
+                                    <i class="fas fa-shopping-basket"></i> <span>购物车</span>
+                                </a>
+                            </div>
+                            <div class="nav-item">
+                                <a href="MyOrders.aspx" class="nav-link <%= Request.Path.Contains("MyOrders") ? "active" : "" %>">
+                                    <i class="fas fa-file-invoice-dollar"></i> <span>我的订单</span>
+                                </a>
+                            </div>
+                            <div class="nav-item">
+                                <a href="Profile.aspx" class="nav-link <%= Request.Path.Contains("Profile") ? "active" : "" %>">
+                                    <i class="fas fa-user-circle"></i> <span>账户设置</span>
+                                </a>
+                            </div>
+                        </asp:PlaceHolder>
+
+                        <asp:PlaceHolder ID="phEmployeeMenu" runat="server" Visible="false">
+                            <div class="menu-heading">管理后台</div>
+                            <div class="nav-item">
+                                <a href="Dashboard.aspx" class="nav-link <%= Request.Path.Contains("Dashboard") ? "active" : "" %>">
+                                    <i class="fas fa-chart-pie"></i> <span>工作台</span>
+                                </a>
+                            </div>
+                            <div class="nav-item">
+                                <a href="OrderManage.aspx" class="nav-link <%= Request.Path.Contains("OrderManage") ? "active" : "" %>">
+                                    <i class="fas fa-clipboard-check"></i> <span>订单管理</span>
+                                </a>
+                            </div>
+                            <div class="nav-item">
+                                <a href="StockManage.aspx" class="nav-link <%= Request.Path.Contains("StockManage") ? "active" : "" %>">
+                                    <i class="fas fa-warehouse"></i> <span>库存管理</span>
+                                </a>
+                            </div>
+                        </asp:PlaceHolder>
+
+                        <asp:PlaceHolder ID="phAdminConfig" runat="server" Visible="false">
+                            <div class="menu-heading">系统配置</div>
+                            <div class="nav-item">
+                                <a href="ProductManage.aspx" class="nav-link <%= Request.Path.Contains("ProductManage") ? "active" : "" %>">
+                                    <i class="fas fa-boxes"></i> <span>商品管理</span>
+                                </a>
+                            </div>
+                            <div class="nav-item">
+                                <a href="CategoryManage.aspx" class="nav-link <%= Request.Path.Contains("CategoryManage") ? "active" : "" %>">
+                                    <i class="fas fa-tags"></i> <span>分类管理</span>
+                                </a>
+                            </div>
+                            <div class="nav-item">
+                                <a href="SupplierManage.aspx" class="nav-link <%= Request.Path.Contains("SupplierManage") ? "active" : "" %>">
+                                    <i class="fas fa-truck"></i> <span>供应商管理</span>
+                                </a>
+                            </div>
+                            <div class="nav-item">
+                                <a href="UserManage.aspx" class="nav-link <%= Request.Path.Contains("UserManage") ? "active" : "" %>">
+                                    <i class="fas fa-users-cog"></i> <span>用户管理</span>
+                                </a>
+                            </div>
+                            <div class="nav-item">
+                                <a href="WarehouseManage.aspx" class="nav-link <%= Request.Path.Contains("WarehouseManage") ? "active" : "" %>">
+                                    <i class="fas fa-store"></i> <span>仓库管理</span>
+                                </a>
+                            </div>
+                            
+                            <div class="menu-heading">数据分析</div>
+                            <div class="nav-item">
+                                <a href="IncomeAnalysis.aspx" class="nav-link <%= Request.Path.Contains("IncomeAnalysis") ? "active" : "" %>">
+                                    <i class="fas fa-chart-line"></i> <span>收入分析</span>
+                                </a>
+                            </div>
+                        </asp:PlaceHolder>
+                    </div>
+                </div>
+
+                <!-- 底部用户信息 - 固定 -->
+                <div class="sidebar-footer">
+                    <div class="d-flex align-items-center">
+                        <img src="https://ui-avatars.com/api/?name=User&background=random" class="rounded-circle shadow-sm" width="40" height="40" alt="用户头像">
+                        <div class="ms-3 overflow-hidden flex-grow-1">
+                            <h6 class="mb-0 fw-bold text-dark text-truncate"><asp:Label ID="lblUserName" runat="server" Text="Guest"></asp:Label></h6>
+                            <asp:LinkButton ID="btnLogout" runat="server" CssClass="text-danger small text-decoration-none fw-bold" OnClick="btnLogout_Click">
+                                <i class="fas fa-sign-out-alt me-1"></i>注销
+                            </asp:LinkButton>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+
+            <!-- 右侧内容区 -->
+            <div class="content-wrapper">
+                
+                <!-- 顶部悬浮导航 - 固定不滚动 -->
+                <header class="topbar">
+                    <div class="d-flex align-items-center flex-shrink-0">
+                        <h5 class="mb-0 fw-bold text-dark"><i class="fas fa-layer-group text-primary me-2"></i><%= Page.Title %></h5>
+                    </div>
+
+                    <div class="d-flex align-items-center gap-4 flex-shrink-0">
+                        <!-- 购物车 (仅顾客可见) -->
+                        <asp:PlaceHolder ID="phCartBtn" runat="server">
+                            <a href="Cart.aspx" class="position-relative text-secondary transition-hover">
+                                <i class="fas fa-shopping-cart"></i>
+                                <asp:UpdatePanel ID="upCartBadge" runat="server" UpdateMode="Conditional" RenderMode="Inline">
+                                    <ContentTemplate>
+                                        <asp:Label ID="lblCartBadge" runat="server" 
+                                            CssClass="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger border border-2 border-white" 
+                                            Style="font-size: 0.6rem; padding: 0.3em 0.6em;"
+                                            Text="0" Visible="false"></asp:Label>
+                                    </ContentTemplate>
+                                </asp:UpdatePanel>
+                            </a>
+                        </asp:PlaceHolder>
+                        
+                        <div class="vr opacity-25"></div>
+                        
+                        <a href="#" class="text-secondary"><i class="fas fa-bell"></i></a>
+                    </div>
+                </header>
+
+                <!-- 页面内容容器 - 可滚动 -->
+                <div class="page-content animate-in">
+                    <asp:ContentPlaceHolder ID="MainContent" runat="server"></asp:ContentPlaceHolder>
+                </div>
+
+            </div>
+        </div>
+    </form>
+    
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    <script>
+        // Toastr 配置
+        toastr.options = { "positionClass": "toast-bottom-right", "timeOut": "3000", "closeButton": true };
+        
+        // 🔧 通用 Modal 修复函数 - 解决 pointer-events 问题
+        function fixModalPointerEvents(modalId) {
+            setTimeout(function() {
+                var modalEl = document.getElementById(modalId);
+                if (!modalEl) {
+                    console.warn('Modal not found: ' + modalId);
+                    return;
+                }
+                
+                // 1. 将 modal 移动到 body 内（避免嵌套在 UpdatePanel 内）
+                var formEl = document.forms && document.forms[0] ? document.forms[0] : document.body;
+                if (modalEl.parentElement !== formEl && modalEl.parentElement !== document.body) {
+                    formEl.appendChild(modalEl);
+                }
+                
+                // 2. 强制启用 pointer-events
+                document.body.style.pointerEvents = 'auto';
+                modalEl.style.pointerEvents = 'auto';
+                
+                // 3. 显示 Modal
+                try {
+                    var modal = bootstrap.Modal.getOrCreateInstance(modalEl, {
+                        backdrop: true,
+                        keyboard: true,
+                        focus: true
+                    });
+                    modal.show();
+                } catch (e) {
+                    console.error('Error showing modal:', e);
+                }
+                
+                // 4. 修复 backdrop 和 dialog 的 pointer-events
+                setTimeout(function() {
+                    // Backdrop
+                    var backdrop = document.querySelector('.modal-backdrop');
+                    if (backdrop) {
+                        backdrop.style.pointerEvents = 'auto';
+                        backdrop.style.zIndex = '1050';
+                    }
+                    
+                    // Modal 本身
+                    modalEl.style.zIndex = '1055';
+                    modalEl.style.pointerEvents = 'auto';
+                    
+                    // Modal Dialog
+                    var dialog = modalEl.querySelector('.modal-dialog');
+                    if (dialog) {
+                        dialog.style.pointerEvents = 'auto';
+                    }
+                    
+                    // Modal Content
+                    var content = modalEl.querySelector('.modal-content');
+                    if (content) {
+                        content.style.pointerEvents = 'auto';
+                    }
+                    
+                    // 所有按钮和表单元素
+                    var interactiveElements = modalEl.querySelectorAll('button, input, select, textarea, a, .btn');
+                    interactiveElements.forEach(function(el) {
+                        el.style.pointerEvents = 'auto';
+                    });
+                    
+                    console.log('Modal fixed: ' + modalId);
+                }, 100);
+            }, 50);
+        }
+
+        // 通用事件监听：保证所有 Bootstrap 模态框在显示时层级与交互正常
+        (function initGlobalModalFix() {
+            document.addEventListener('shown.bs.modal', function (ev) {
+                var modalEl = ev.target;
+                var formEl = document.forms && document.forms[0] ? document.forms[0] : document.body;
+
+                // 避免被 UpdatePanel 包裹影响层级与事件，统一移到 form/body 下
+                if (modalEl.parentElement !== formEl && modalEl.parentElement !== document.body) {
+                    formEl.appendChild(modalEl);
+                }
+
+                // 统一修复 pointer-events 与层级
+                document.body.style.pointerEvents = 'auto';
+                modalEl.style.pointerEvents = 'auto';
+                modalEl.style.zIndex = '1055';
+
+                // Backdrop 修复
+                var backdrop = document.querySelector('.modal-backdrop');
+                if (backdrop) {
+                    backdrop.style.pointerEvents = 'auto';
+                    backdrop.style.zIndex = '1050';
+                }
+
+                // 子元素交互
+                var dialog = modalEl.querySelector('.modal-dialog');
+                if (dialog) dialog.style.pointerEvents = 'auto';
+                var content = modalEl.querySelector('.modal-content');
+                if (content) content.style.pointerEvents = 'auto';
+            });
+
+            document.addEventListener('hide.bs.modal', function () {
+                // 关闭模态框后恢复页面交互
+                document.body.style.pointerEvents = 'auto';
+            });
+        })();
+        
+        // 监听所有 UpdatePanel 更新完成事件
+        if (typeof Sys !== 'undefined' && Sys.WebForms && Sys.WebForms.PageRequestManager) {
+            var prm = Sys.WebForms.PageRequestManager.getInstance();
+            
+            prm.add_endRequest(function(sender, args) {
+                // UpdatePanel 更新后自动修复所有可能的 modal
+                setTimeout(function() {
+                    document.body.style.pointerEvents = 'auto';
+                    
+                    // 检查是否有打开的 modal
+                    var openModals = document.querySelectorAll('.modal.show');
+                    openModals.forEach(function(modal) {
+                        modal.style.pointerEvents = 'auto';
+                        var dialog = modal.querySelector('.modal-dialog');
+                        if (dialog) dialog.style.pointerEvents = 'auto';
+                        var content = modal.querySelector('.modal-content');
+                        if (content) content.style.pointerEvents = 'auto';
+
+                        // 统一修复层级与 backdrop
+                        modal.style.zIndex = '1055';
+                        var backdrop = document.querySelector('.modal-backdrop');
+                        if (backdrop) {
+                            backdrop.style.pointerEvents = 'auto';
+                            backdrop.style.zIndex = '1050';
+                        }
+                    });
+                }, 50);
+            });
+        }
+        
+        // 页面加载完成后确保 pointer-events 正常
+        document.addEventListener('DOMContentLoaded', function() {
+            document.body.style.pointerEvents = 'auto';
+        });
+    </script>
+</body>
+</html>
